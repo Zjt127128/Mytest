@@ -1,8 +1,9 @@
 package com.example.controller;
 
-import com.example.pojo.Joblevel;
-import com.example.pojo.RespBean;
-import com.example.pojo.Role;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.pojo.*;
+import com.example.service.IMenuRoleService;
+import com.example.service.IMenuService;
 import com.example.service.IRoleService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +12,17 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/system/basic/permiss")
 public class PermissController {
     @Autowired
     private IRoleService roleService;
+    @Autowired
+    private IMenuService menuService;
+    @Autowired
+    private IMenuRoleService menuRoleService;
 
     @ApiOperation("获取所有角色")
     @GetMapping("/")
@@ -61,5 +67,19 @@ public class PermissController {
             return RespBean.success("批量删除成功");
         }
         return RespBean.error("删除失败，请重试");
+    }
+
+    @ApiOperation("查询所有菜单")
+    @GetMapping("/menus")
+    public List<Menu> allMenus(){
+        return menuService.getAllMenus();
+    }
+
+    @ApiOperation("根据角色id查询菜单id")
+    @PostMapping("/mid/{rid}")
+    public List<Integer> getMidByRid(@PathVariable Integer rid){
+        List<MenuRole> list = menuRoleService.list(new QueryWrapper<MenuRole>().eq("rid", rid));
+        List<Integer> id = list.stream().map(MenuRole::getMid).collect(Collectors.toList());
+        return id;
     }
 }
