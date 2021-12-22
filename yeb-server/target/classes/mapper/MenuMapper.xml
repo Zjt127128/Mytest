@@ -98,7 +98,8 @@
         ORDER BY
             m.id
     </select>
-<!--    查询所有菜单-->
+
+    <!--    查询所有菜单-->
     <select id="getAllMenus" resultMap="MenuWithChildren">
         SELECT
             m1.id AS id1,
