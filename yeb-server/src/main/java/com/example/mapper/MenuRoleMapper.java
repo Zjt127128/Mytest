@@ -13,4 +13,7 @@ import com.example.pojo.MenuRole;
  */
 public interface MenuRoleMapper extends BaseMapper<MenuRole> {
 
+    //更新角色菜单
+    Integer insertRecord(Integer rid, Integer[] mids);
+
 }

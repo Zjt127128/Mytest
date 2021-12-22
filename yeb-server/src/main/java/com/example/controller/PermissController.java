@@ -31,7 +31,7 @@ public class PermissController {
     }
 
     @ApiOperation("添加一个角色")
-    @PostMapping("/")
+    @PostMapping("/role")
     public RespBean addRole(@RequestBody Role role){
         if(role.getName().startsWith("ROLE_")){
             if(roleService.save(role)){
@@ -81,5 +81,12 @@ public class PermissController {
         List<MenuRole> list = menuRoleService.list(new QueryWrapper<MenuRole>().eq("rid", rid));
         List<Integer> id = list.stream().map(MenuRole::getMid).collect(Collectors.toList());
         return id;
+    }
+
+    @ApiOperation("更新角色菜单")
+    @PostMapping("/")
+    public RespBean updateMenuRole(Integer rid,Integer[] mids){
+        return menuRoleService.updateMenuRole(rid,mids);
+        //return RespBean.success("更新成功");
     }
 }
