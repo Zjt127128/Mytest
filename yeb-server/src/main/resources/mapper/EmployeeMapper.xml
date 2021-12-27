@@ -1,5 +1,152 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.EmployeeMapper">
+    <resultMap id="BaseResultMap" type="com.example.pojo.Employee">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="gender" property="gender"/>
+        <result column="birthday" property="birthday"/>
+        <result column="idCard" property="idCard"/>
+        <result column="wedlock" property="wedlock"/>
+        <result column="nationId" property="nationId"/>
+        <result column="nativePlace" property="nativePlace"/>
+        <result column="politicId" property="politicId"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+        <result column="departmentId" property="departmentId"/>
+        <result column="jobLevelId" property="jobLevelId"/>
+        <result column="posId" property="posId"/>
+        <result column="engageForm" property="engageForm"/>
+        <result column="tiptopDegree" property="tiptopDegree"/>
+        <result column="specialty" property="specialty"/>
+        <result column="school" property="school"/>
+        <result column="beginDate" property="beginDate"/>
+        <result column="workState" property="workState"/>
+        <result column="workID" property="workID"/>
+        <result column="contractTerm" property="contractTerm"/>
+        <result column="conversionTime" property="conversionTime"/>
+        <result column="notWorkDate" property="notWorkDate"/>
+        <result column="beginContract" property="beginContract"/>
+        <result column="endContract" property="endContract"/>
+        <result column="workAge" property="workAge"/>
+        <result column="salaryId" property="salaryId"/>
+        <result column="MAX( workID )" property="workId"/>
+    </resultMap>
+    <resultMap id="EmployeeInfo" type="com.example.pojo.Employee" extends="BaseResultMap">
+        <association property="nation" javaType="com.example.pojo.Nation">
+            <id column="nid" property="id"/>
+            <result column="nname" property="name" />
+        </association>
+        <association property="politicsStatus" javaType="com.example.pojo.PoliticsStatus">
+            <id column="pid" property="id"/>
+            <result column="pname" property="name" />
+        </association>
+        <association property="department" javaType="com.example.pojo.Department">
+            <id column="did" property="id"/>
+            <result column="dname" property="name" />
+        </association>
+        <association property="joblevel" javaType="com.example.pojo.Joblevel">
+            <id column="jid" property="id"/>
+            <result column="jname" property="name" />
+        </association>
+        <association property="position" javaType="com.example.pojo.Position">
+            <id column="posid" property="id"/>
+            <result column="posname" property="name" />
+        </association>
+    </resultMap>
 
+<!--    获取所有员工-->
+    <select id="getEmployee" resultMap="EmployeeInfo">
+        SELECT
+            e.*,
+            n.id AS nid,
+            n.`name` AS nname,
+            p.id AS pid,
+            p.`name` AS pname,
+            d.id AS did,
+            d.`name` AS dname,
+            j.id AS jid,
+            j.`name` AS jname,
+            pos.id AS posid,
+            pos.`name` AS posname
+        FROM
+            t_employee e,
+            t_nation n,
+            t_politics_status p,
+            t_department d,
+            t_joblevel j,
+            t_position pos
+        WHERE
+            e.nationId = n.id
+          AND e.politicId = p.id
+          AND e.departmentId = d.id
+          AND e.jobLevelId = j.id
+          AND e.posId = pos.id
+          <if test="null!=employee.name and ''!=employee.name">
+              AND e.`name` LIKE CONCAT( '%', #{employee}, '%' )
+          </if>
+          <if test="null!=employee.politicId">
+              AND e.politicId =#{employee.politicId}
+          </if>
+          <if test="null!=employee.nationId">
+            AND e.nationId =#{employee.nationId}
+          </if>
+        <if test="null!=employee.jobLevelId">
+            AND e.jobLevelId =#{employee.jobLevelId}
+        </if>
+        <if test="null!=employee.posId">
+            AND e.posId =#{employee.posId}
+        </if>
+        <if test="null!=employee.engageForm and ''!=employee.engageForm">
+            AND e.engageForm=#{employee.engageForm}
+        </if>
+        <if test="null!=employee.departmentId">
+            AND e.departmentId =#{employee.departmentId}
+        </if>
+        <if test="null!=beginDateScope and 2==beginDateScope.length" >
+            AND e.beginDate BETWEEN #{beginDateScope[0]}  AND #{beginDateScope[1]}
+        </if>
+        ORDER BY
+            e.id
+    </select>
+<!--    获取工号-->
+    <select id="getmaxWorkID" resultType="java.lang.Integer">
+        SELECT
+            MAX( workID )
+        FROM
+            t_employee
+    </select>
+    <select id="getEmployee1" resultMap="EmployeeInfo">
+        SELECT
+            e.*,
+            n.id AS nid,
+            n.`name` AS nname,
+            p.id AS pid,
+            p.`name` AS pname,
+            d.id AS did,
+            d.`name` AS dname,
+            j.id AS jid,
+            j.`name` AS jname,
+            pos.id AS posid,
+            pos.`name` AS posname
+        FROM
+            t_employee e,
+            t_nation n,
+            t_politics_status p,
+            t_department d,
+            t_joblevel j,
+            t_position pos
+        WHERE
+            e.nationId = n.id
+          AND e.politicId = p.id
+          AND e.departmentId = d.id
+          AND e.jobLevelId = j.id
+          AND e.posId = pos.id
+          <if test="null!=id">
+              AND e.id = #{id}
+          </if>
+        ORDER BY
+        e.id
+    </select>
 </mapper>

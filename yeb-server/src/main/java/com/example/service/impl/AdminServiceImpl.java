@@ -2,13 +2,12 @@ package com.example.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.config.AdminUtils;
 import com.example.config.security.JwtTokenUtil;
 import com.example.mapper.AdminMapper;
+import com.example.mapper.AdminRoleMapper;
 import com.example.mapper.RoleMapper;
-import com.example.pojo.Admin;
-import com.example.pojo.Menu;
-import com.example.pojo.RespBean;
-import com.example.pojo.Role;
+import com.example.pojo.*;
 import com.example.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import springfox.documentation.spi.service.contexts.SecurityContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -47,6 +47,8 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     private AdminMapper adminMapper;
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private AdminRoleMapper adminRoleMapper;
 
 
     //登录之后返回token
@@ -88,6 +90,24 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     @Override
     public List<Role> getRoles(Integer adminId) {
         return roleMapper.getRoles(adminId);
+    }
+
+    //获取所有操作员
+    @Override
+    public List<Admin> getAllAdmin(String keywords) {
+        return adminMapper.getAllAdmin(AdminUtils.getCurrentAdmin().getId(),keywords);
+
+    }
+
+    //更新操作员角色
+    @Override
+    public RespBean updateAdminRole(Integer adminId, Integer[] rids) {
+        adminRoleMapper.delete(new QueryWrapper<AdminRole>().eq("adminId",adminId));
+        Integer integer = adminRoleMapper.updateAdminRole(adminId, rids);
+        if(rids.length==integer){
+            return RespBean.success("更新成功");
+        }
+        return RespBean.error("更新失败");
     }
 
 
