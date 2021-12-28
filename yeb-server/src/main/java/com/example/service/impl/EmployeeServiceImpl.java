@@ -9,13 +9,17 @@ import com.example.pojo.RespPageBean;
 import com.example.service.IEmployeeService;
 import com.example.mapper.EmployeeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -33,13 +37,21 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     private EmployeeMapper employeeMapper;
     @Autowired
     private JavaMailSenderImpl mailSender;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     //获取所有员工
     @Override
     public RespPageBean getEmployee(Integer currentPage, Integer size, Employee employee, LocalDate[] beginDateScope) {
         Page<Employee> page = new Page<>(currentPage,size);
-        IPage<Employee> employeeIPage = employeeMapper.getEmployee(page, employee, beginDateScope);
-        RespPageBean respPageBean=new RespPageBean(employeeIPage.getTotal(),employeeIPage.getRecords());
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        IPage<Employee> employee_ = (IPage<Employee>) valueOperations.get("employee_");
+        if(CollectionUtils.isEmpty((Collection<Employee>) employee_)){
+            IPage<Employee> employeeIPage = employeeMapper.getEmployee(page, employee, beginDateScope);
+            employee_=employeeIPage;
+            valueOperations.set("employee_",employee_);
+        }
+        RespPageBean respPageBean=new RespPageBean(employee_.getTotal(),employee_.getRecords());
         return respPageBean;
     }
 

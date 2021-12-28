@@ -1,15 +1,20 @@
 package com.example.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.pojo.*;
+import com.example.pojo.Menu;
+import com.example.pojo.MenuRole;
+import com.example.pojo.RespBean;
+import com.example.pojo.Role;
 import com.example.service.IMenuRoleService;
 import com.example.service.IMenuService;
 import com.example.service.IRoleService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +28,19 @@ public class PermissController {
     private IMenuService menuService;
     @Autowired
     private IMenuRoleService menuRoleService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @ApiOperation("获取所有角色")
     @GetMapping("/")
     public List<Role> allRoles(){
-        return roleService.list();
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        List<Role> role_ = (List<Role>) valueOperations.get("role_");
+        if(CollectionUtils.isEmpty(role_)){
+            role_=roleService.list();
+            valueOperations.set("role_",role_);
+        }
+        return role_;
     }
 
     @ApiOperation("添加一个角色")

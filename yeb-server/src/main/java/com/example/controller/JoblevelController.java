@@ -6,6 +6,9 @@ import com.example.pojo.RespBean;
 import com.example.service.IJoblevelService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -25,11 +28,19 @@ import java.util.List;
 public class JoblevelController {
     @Autowired
     private IJoblevelService joblevelService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @ApiOperation("查询所有职称")
     @GetMapping("/")
     public List<Joblevel> allJoblevels(){
-        return joblevelService.list();
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        List<Joblevel> joblevel_ = (List<Joblevel>) valueOperations.get("joblevel_");
+        if(CollectionUtils.isEmpty(joblevel_)){
+            joblevel_=joblevelService.list();
+            valueOperations.set("joblevel_",joblevel_);
+        }
+        return joblevel_;
     }
 
     @ApiOperation("增加一个职称")

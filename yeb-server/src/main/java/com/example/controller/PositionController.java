@@ -6,6 +6,9 @@ import com.example.pojo.RespBean;
 import com.example.service.IPositionService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -25,11 +28,18 @@ import java.util.List;
 public class PositionController {
     @Autowired
     private IPositionService positionService;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @ApiOperation("获取职位信息")
     @GetMapping("/")
     public List<Position> getPosition(){
-        List<Position> list = positionService.list();
-        return list;
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        List<Position> position_ = (List<Position>) valueOperations.get("position_");
+        if(CollectionUtils.isEmpty(position_)){
+            position_=positionService.list();
+            valueOperations.set("position_",position_);
+        }
+        return position_;
     }
 
     @ApiOperation("增加职位信息")
