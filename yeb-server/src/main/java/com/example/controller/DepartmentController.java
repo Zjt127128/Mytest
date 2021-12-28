@@ -5,8 +5,10 @@ import com.example.pojo.Department;
 import com.example.pojo.RespBean;
 import com.example.service.IDepartmentService;
 import io.swagger.annotations.ApiOperation;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,11 +26,19 @@ import java.util.List;
 public class DepartmentController {
     @Autowired
     private IDepartmentService departmentService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @ApiOperation("获取所有部门")
     @GetMapping("/")
     public List<Department> getAllDepartment(){
-        return departmentService.getAllDepartment();
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        List<Department> department = (List<Department>) valueOperations.get("department_");
+        if(CollectionUtils.isEmpty(department)){
+            department=departmentService.getAllDepartment();
+            valueOperations.set("department_",department);
+        }
+        return department;
     }
 
     @ApiOperation("添加一个部门")

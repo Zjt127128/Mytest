@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.pojo.Employee;
-import com.example.pojo.RespBean;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDate;
@@ -30,6 +29,6 @@ public interface EmployeeMapper extends BaseMapper<Employee> {
     List<Employee> getEmployee1(Integer id);
 
 
-    
-    
+    //获取所有员工工资帐套
+    IPage<Employee> getEmployeeWithSalary(Page<Employee> page);
 }

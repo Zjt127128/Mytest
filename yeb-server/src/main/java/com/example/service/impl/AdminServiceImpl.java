@@ -11,14 +11,17 @@ import com.example.pojo.*;
 import com.example.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import springfox.documentation.spi.service.contexts.SecurityContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -49,6 +52,8 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     private RoleMapper roleMapper;
     @Autowired
     private AdminRoleMapper adminRoleMapper;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
 
     //登录之后返回token
@@ -95,7 +100,14 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     //获取所有操作员
     @Override
     public List<Admin> getAllAdmin(String keywords) {
-        return adminMapper.getAllAdmin(AdminUtils.getCurrentAdmin().getId(),keywords);
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        //从redis获取所有操作员
+        List<Admin> admins = (List<Admin>) valueOperations.get("admin_");
+        if (CollectionUtils.isEmpty(admins)){
+            admins=adminMapper.getAllAdmin(AdminUtils.getCurrentAdmin().getId(),keywords);
+            valueOperations.set("admin_",admins);
+        }
+        return admins;
 
     }
 
@@ -108,6 +120,20 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             return RespBean.success("更新成功");
         }
         return RespBean.error("更新失败");
+    }
+
+    @Override
+    public RespBean updateAdminPassword(String oldPass, String pass, Integer adminId) {
+        Admin admin = adminMapper.selectById(adminId);
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if(encoder.matches(oldPass,admin.getPassword())){
+            admin.setPassword(encoder.encode(pass));
+            int i = adminMapper.updateById(admin);
+            if(1==i){
+                return RespBean.success("修改密码成功");
+            }
+        }
+        return RespBean.error("修改密码失败");
     }
 
 

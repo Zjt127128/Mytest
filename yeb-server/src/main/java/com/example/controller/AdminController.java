@@ -8,6 +8,9 @@ import com.example.service.AdminService;
 import com.example.service.IRoleService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +30,9 @@ public class AdminController {
     private AdminService adminService;
     @Autowired
     private IRoleService roleService;
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @ApiOperation("获取所有操作员")
     @GetMapping("/")
     public List<Admin> getAllAdmin(String keywords){
@@ -54,7 +60,13 @@ public class AdminController {
     @ApiOperation("获取所有角色")
     @GetMapping("/roles")
     public List<Role> getAllRoles(){
-        return roleService.list();
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        List<Role> roles= (List<Role>) valueOperations.get("roles_");
+        if(CollectionUtils.isEmpty(roles)){
+            roles=roleService.list();
+            valueOperations.set("roles_",roles);
+        }
+        return roles;
     }
 
     @ApiOperation("更新操作员角色")

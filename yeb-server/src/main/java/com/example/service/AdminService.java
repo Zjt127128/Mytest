@@ -2,7 +2,6 @@ package com.example.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.pojo.Admin;
-import com.example.pojo.Menu;
 import com.example.pojo.RespBean;
 import com.example.pojo.Role;
 
@@ -32,4 +31,7 @@ public interface AdminService extends IService<Admin> {
 
     //更新操作员角色
     RespBean updateAdminRole(Integer adminId, Integer[] rids);
+
+    //更新密码
+    RespBean updateAdminPassword(String oldPass, String pass, Integer adminId);
 }

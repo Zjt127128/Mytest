@@ -44,6 +44,7 @@ public class EmployeeController {
     private IPositionService positionService;
     @Autowired
     private IDepartmentService departmentService;
+
     @ApiOperation("获取所有员工（分页）")
     @GetMapping("/")
     public RespPageBean getEmployee(@RequestParam(defaultValue = "1") Integer currentPage,

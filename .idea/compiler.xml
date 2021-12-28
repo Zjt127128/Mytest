@@ -15,6 +15,7 @@
       <module name="wrapper" target="1.5" />
       <module name="yeb" target="1.8" />
       <module name="yeb-generator" target="1.8" />
+      <module name="yeb-mail" target="1.8" />
       <module name="yeb-server" target="1.8" />
     </bytecodeTargetLevel>
   </component>
@@ -22,6 +23,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="yeb" options="-parameters" />
       <module name="yeb-generator" options="-parameters" />
+      <module name="yeb-mail" options="-parameters" />
       <module name="yeb-server" options="-parameters" />
     </option>
   </component>

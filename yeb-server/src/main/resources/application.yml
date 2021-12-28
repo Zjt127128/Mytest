@@ -3,6 +3,12 @@ server:
   port: 8081
 
 spring:
+  mail:
+    host: smtp.163.com  #SMTP服务器地址
+    username: zjt12712850662021@163.com
+    password: YPNYKMZURQNXXWOZ
+    properties:
+      from: zjt12712850662021@163.com
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

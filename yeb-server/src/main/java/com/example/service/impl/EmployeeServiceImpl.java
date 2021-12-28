@@ -9,11 +9,14 @@ import com.example.pojo.RespPageBean;
 import com.example.service.IEmployeeService;
 import com.example.mapper.EmployeeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -28,6 +31,8 @@ import java.util.List;
 public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> implements IEmployeeService {
     @Autowired
     private EmployeeMapper employeeMapper;
+    @Autowired
+    private JavaMailSenderImpl mailSender;
 
     //获取所有员工
     @Override
@@ -56,6 +61,13 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         employee.setContractTerm(Double.parseDouble(decimalFormat.format(days/365.00)));
 
         if(1==employeeMapper.insert(employee)){
+            SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+            simpleMailMessage.setFrom("zjt12712850662021@163.com");
+            simpleMailMessage.setTo(employee.getEmail());
+            simpleMailMessage.setSubject("欢迎加入梦天门");
+            simpleMailMessage.setText("欢迎"+employee.getName()+"您成为我们的一员");
+            simpleMailMessage.setSentDate(new Date());
+            mailSender.send(simpleMailMessage);
             return RespBean.success("添加成功");
         }
         return RespBean.error("添加失败");
@@ -66,5 +78,14 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     public List<Employee> getEmployee1(Integer id) {
         return employeeMapper.getEmployee1(id);
 
+    }
+
+    @Override
+    public RespPageBean getEmployeeWithSalary(Integer currentPage, Integer size) {
+        //开启分页
+        Page<Employee> page = new Page<>(currentPage,size);
+        IPage<Employee> employeeIPage=employeeMapper.getEmployeeWithSalary(page);
+        RespPageBean respPageBean = new RespPageBean(employeeIPage.getTotal(),employeeIPage.getRecords());
+        return respPageBean;
     }
 }
